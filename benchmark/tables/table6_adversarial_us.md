@@ -1,0 +1,6 @@
+| Adversarial input   |   Brute Force |   Sellers' DP |   Pigeonhole D&C |   Seed-and-Extend |
+|:--------------------|--------------:|--------------:|-----------------:|------------------:|
+| control_dna         |          2786 |           846 |                0 |                 0 |
+| brute_worst         |          3132 |             0 |            65389 |              2664 |
+| pigeon_worst        |          6926 |             0 |            56823 |              3292 |
+| seed_worst          |          7455 |             0 |            49273 |              5987 |

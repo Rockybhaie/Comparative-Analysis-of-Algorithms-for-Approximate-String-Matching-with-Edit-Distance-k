@@ -1,0 +1,128 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+
+using namespace std;
+
+// ============================================================================
+// PHASE 2: THE CHECKING PHASE (DYNAMIC PROGRAMMING VERIFICATION)
+// Uses Sellers' Algorithm with O(m) space complexity.
+// ============================================================================
+bool verifyCandidateWindow(const string& P, const string& W, int k, int textOffset) {
+    int m = P.length();
+    int w_len = W.length();
+    
+    // Edge case: window is too small to possibly match
+    if (w_len == 0) return false;
+
+    // We only need two rows of the DP matrix to calculate Sellers' algorithm, 
+    // satisfying the O(m) space complexity requirement.
+    vector<int> prev_row(m + 1);
+    vector<int> curr_row(m + 1);
+
+    // Initialize the first column (comparing empty text window to pattern prefixes)
+    for (int i = 0; i <= m; i++) {
+        prev_row[i] = i;
+    }
+
+    bool matchFound = false;
+
+    // Fill the DP matrix column by column (Sellers' allows starting anywhere in the text)
+    for (int j = 1; j <= w_len; j++) {
+        curr_row[0] = 0; // Sellers' initialization: cost to match empty pattern is 0
+
+        for (int i = 1; i <= m; i++) {
+            int cost = (P[i - 1] == W[j - 1]) ? 0 : 1;
+            
+            curr_row[i] = min({
+                prev_row[i] + 1,       // Deletion
+                curr_row[i - 1] + 1,   // Insertion
+                prev_row[i - 1] + cost // Substitution / Exact
+            });
+        }
+
+        // If the edit distance at the end of the pattern is <= k, it's a valid match!
+        if (curr_row[m] <= k) {
+            cout << "    [Hit!] Valid match found ending at text index: " 
+                 << (textOffset + j - 1) << " (Errors: " << curr_row[m] << ")\n";
+            matchFound = true;
+        }
+
+        // Move to the next column
+        prev_row = curr_row;
+    }
+    
+    return matchFound;
+}
+
+// ============================================================================
+// PHASE 1: THE SEARCH PHASE (PIGEONHOLE PRINCIPLE FILTER)
+// ============================================================================
+void approximateStringMatch(const string& T, const string& P, int k) {
+    int n = T.length();
+    int m = P.length();
+
+    // The Mathematical Foundation (Lemma 2 from the paper)
+    // We divide the pattern into k+1 pieces of length r.
+    int pieces = k + 1;
+    int r = m / pieces; 
+
+    cout << "--- Pigeonhole Principle Filter Initialization ---\n";
+    cout << "Pattern: " << P << " (m=" << m << "), Limit: k=" << k << "\n";
+    cout << "Dividing pattern into " << pieces << " blocks of length r=" << r << "\n\n";
+
+    // Extract the k+1 blocks from the pattern
+    vector<string> blocks;
+    for (int idx = 0; idx < pieces; idx++) {
+        // Ensure we don't go out of bounds on the last block if m isn't perfectly divisible
+        int current_r = (idx == pieces - 1) ? (m - idx * r) : r; 
+        blocks.push_back(P.substr(idx * r, current_r));
+    }
+
+    // Step 2: Search for exact matches of each block in the text
+    for (int b = 0; b < blocks.size(); b++) {
+        const string& block = blocks[b];
+        int block_pos = T.find(block, 0);
+
+        while (block_pos != string::npos) {
+            int i = block_pos; // 'i' is the exact index where the block matched in T
+            
+            // Step 3: Define the Candidate Window Boundaries
+            // Direct implementation of the paper's formula: i - (m-r) - k to i + m + k
+            int start_idx = i - (m - r) - k;
+            int end_idx = i + m + k;
+
+            // Clamp boundaries to ensure we don't go out of array bounds
+            start_idx = max(0, start_idx);
+            end_idx = min(n - 1, end_idx);
+            
+            string candidateWindow = T.substr(start_idx, end_idx - start_idx + 1);
+
+            cout << "[Filter Triggered] Exact match for block '" << block 
+                 << "' found at text index " << i << ".\n";
+            cout << "  -> Extracting Candidate Window: [" << candidateWindow << "]\n";
+            cout << "  -> Running DP Verification...\n";
+
+            // Step 4: Run the heavy DP math ONLY on this small window
+            verifyCandidateWindow(P, candidateWindow, k, start_idx);
+
+            // Continue searching for the rest of this block's occurrences
+            block_pos = T.find(block, block_pos + 1);
+        }
+    }
+}
+
+// ============================================================================
+// MAIN FUNCTION (TESTING SCENARIOS)
+// ============================================================================
+int main() {
+    // Test Scenario: A genomic sequence with noisy data
+    string Text = "CGTAGCGTAALGARITHNCGTAGTCG";
+    string Pattern = "ALGORITHM";
+    int k = 2;
+    
+    approximateStringMatch(Text, Pattern, k);
+
+    return 0;
+}

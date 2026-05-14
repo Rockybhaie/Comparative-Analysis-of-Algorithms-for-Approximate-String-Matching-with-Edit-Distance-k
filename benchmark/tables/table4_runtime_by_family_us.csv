@@ -1,0 +1,9 @@
+Family,Brute Force,Sellers' DP,Pigeonhole D&C,Seed-and-Extend
+adversarial,199,0,0,0
+binary,610,200,574,193
+dna,200,127,0,0
+english,102,0,0,1127
+low_entropy_dna,201,105,137,0
+real_dna,0,0,0,0
+real_english,225,0,0,0
+repetitive,1129,77,22457,2084

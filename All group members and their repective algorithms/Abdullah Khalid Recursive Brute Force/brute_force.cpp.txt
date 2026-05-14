@@ -1,0 +1,97 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <chrono>
+
+using namespace std;
+
+// 1. THE CORE ALGORITHM (Recursive Branch-and-Bound)
+void recursiveSearch(const string& text, const string& pattern, int t_idx, int p_idx, int errors, int k, vector<int>& match_positions, int start_pos) {
+    // Bound 1: Exceeded allowed errors
+    if (errors > k) return;
+
+    // Bound 2: Successfully matched the entire pattern
+    if (p_idx == pattern.length()) {
+        // Prevent duplicate logging of the same starting position
+        if (match_positions.empty() || match_positions.back() != start_pos) {
+            match_positions.push_back(start_pos);
+        }
+        return;
+    }
+
+    // Bound 3: Reached end of text before pattern finishes
+    if (t_idx == text.length()) return;
+
+    // The Branching
+    if (text[t_idx] == pattern[p_idx]) {
+        // Match: No errors added
+        recursiveSearch(text, pattern, t_idx + 1, p_idx + 1, errors, k, match_positions, start_pos);
+    } else {
+        // Mismatch: Branch into all 3 edit operations
+        recursiveSearch(text, pattern, t_idx + 1, p_idx + 1, errors + 1, k, match_positions, start_pos); // Substitution
+        recursiveSearch(text, pattern, t_idx + 1, p_idx, errors + 1, k, match_positions, start_pos);     // Insertion
+        recursiveSearch(text, pattern, t_idx, p_idx + 1, errors + 1, k, match_positions, start_pos);     // Deletion
+    }
+}
+
+// 2. THE BENCHMARKING ENGINE
+int main() {
+    // --- Configuration ---
+    string filename = "sample_dna.txt";
+    string pattern = "ATCGTA"; // You can change this to test different lengths (m)
+    int k = 1;                 // You can change this to test different error limits (k)
+
+    // --- File Reading ---
+    ifstream file(filename);
+    if (!file.is_open()) {
+        cout << "Error: Could not open " << filename << ". Make sure the file exists." << endl;
+        return 1;
+    }
+    string text((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
+    file.close();
+
+    cout << "Text loaded. Length (n): " << text.length() << " characters." << endl;
+    cout << "Starting Brute Force Search..." << endl;
+
+    vector<int> match_positions;
+
+    // --- Start Timer ---
+    auto start_time = chrono::high_resolution_clock::now();
+
+    // Run the search from every possible starting index in the text
+    for (int i = 0; i < text.length(); i++) {
+        recursiveSearch(text, pattern, i, 0, 0, k, match_positions, i);
+    }
+
+    // --- Stop Timer ---
+    auto end_time = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(end_time - start_time).count();
+
+    // --- Output Results to Console ---
+    cout << "Search complete." << endl;
+    cout << "Total Matches Found: " << match_positions.size() << endl;
+    cout << "Execution Time: " << duration << " ms" << endl;
+
+    // --- Export Results to CSV ---
+    // ios::app ensures we append to the file rather than overwriting it, 
+    // so you can run the program multiple times to build your graph dataset.
+    ofstream csvFile("brute_force_results.csv", ios::app); 
+    if (csvFile.is_open()) {
+        // If file is empty, write the header row
+        filebuf* pbuf = csvFile.rdbuf();
+        if (pbuf->pubseekoff(0, ios::cur, ios::out) == 0) {
+            csvFile << "Algorithm,Text_Length(n),Pattern_Length(m),Errors(k),Matches_Found,Time(ms)\n";
+        }
+        
+        // Write the data row
+        csvFile << "BruteForce," << text.length() << "," << pattern.length() << "," << k << "," 
+                << match_positions.size() << "," << duration << "\n";
+        csvFile.close();
+        cout << "Results appended to brute_force_results.csv" << endl;
+    } else {
+        cout << "Error: Could not write to CSV file." << endl;
+    }
+
+    return 0;
+}

@@ -1,0 +1,5 @@
+Algorithm,Best-case time,Average-case time,Worst-case time,Space,Optimality
+Brute Force (Khalid),O(n),O(n·m),O(n·3^k) ≈ O(n·3^m),O(m) recursion depth,Exact
+Sellers' DP (Kashish),O(n·m),O(n·m),O(n·m),O(m) (rolling rows),Exact
+Pigeonhole D&C (Muskan),O(n),"O(n·k) (small k, large σ)",O(n·m·k),O(m),Exact
+Seed-and-Extend (Abdullah),O(n + m),O(n + (n·m)/σ^q),O(n·m),O(n) q-gram index,Approximate (Hamming only)

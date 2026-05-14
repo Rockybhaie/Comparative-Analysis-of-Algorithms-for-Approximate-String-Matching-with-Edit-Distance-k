@@ -1,0 +1,5 @@
+algo,median_us,mean_us,max_us,cases_run,cases_skipped,precision,recall
+brute,0.0,2086.588,27693.0,216,0,0.902,0.94
+sellers,0.0,3347.338,31573.0,290,0,1.0,1.0
+pigeonhole,0.0,59578.914,2277186.0,290,0,1.0,1.0
+seed,995.5,7809.686,273215.0,290,0,1.0,0.239

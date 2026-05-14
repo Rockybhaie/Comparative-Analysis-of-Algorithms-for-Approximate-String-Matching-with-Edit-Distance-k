@@ -1,0 +1,6 @@
+| Algorithm       |   Empirical exponent on n |   Theoretical exponent on n |   Δ (empirical − theory) |   Data points |
+|:----------------|--------------------------:|----------------------------:|-------------------------:|--------------:|
+| Brute Force     |                     3.448 |                           1 |                    2.448 |             2 |
+| Sellers' DP     |                     1.368 |                           1 |                    0.368 |             4 |
+| Pigeonhole D&C  |                     1.411 |                           1 |                    0.411 |             3 |
+| Seed-and-Extend |                     1.377 |                           1 |                    0.377 |             2 |
